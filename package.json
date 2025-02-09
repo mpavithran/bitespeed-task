@@ -20,6 +20,8 @@
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "joi": "^17.13.3",
-    "sequelize": "^6.37.5"
+    "sequelize": "^6.37.5",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }

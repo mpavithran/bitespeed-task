@@ -60,3 +60,6 @@ export const Contacts = Contact.init(
     paranoid: true,
   }
 );
+
+Contacts.hasMany(Contacts, { foreignKey: 'linkedId', as: 'linkedContact' });
+Contacts.belongsTo(Contacts, { foreignKey: 'linkedId', as: 'primaryContact' });

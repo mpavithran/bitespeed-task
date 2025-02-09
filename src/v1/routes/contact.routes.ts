@@ -1,10 +1,10 @@
 import express from "express";
 import {
-  createNewContact,
+  identify,
 } from "../controller/contact.controller";
 
 const contactRouter = express.Router();
 
-contactRouter.post("/identify", createNewContact);
+contactRouter.post("/identify", identify);
 
 export default contactRouter;
