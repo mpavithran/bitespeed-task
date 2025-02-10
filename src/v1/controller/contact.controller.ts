@@ -12,13 +12,16 @@ export const identify =  asyncHandler(async (
 	throw "Email 0r PhoneNumber needed"
  }
   const contactConditions: any = [];
+  const createContact: any = {};
 
   if (![null,undefined,'',0].includes(req.body.email)) {
     contactConditions.push({email : req.body.email});
+	createContact['email']=req.body.email
   }
 
   if (![null,undefined,'',0].includes(req.body.phoneNumber)) {
    contactConditions.push({phoneNumber : req.body.phoneNumber.toString()});
+   createContact['phoneNumber']=req.body.phoneNumber.toString()
   }
   
   let response = {}
@@ -32,8 +35,7 @@ export const identify =  asyncHandler(async (
   
   if (contacts.length === 0) {
    const contactDetails= await Contacts.create({
-	  email: req.body.email,
-      phoneNumber: req.body.phoneNumber.toString(),
+	  ...createContact,
       linkPrecedence: 'primary',
     });
 	
@@ -46,16 +48,11 @@ export const identify =  asyncHandler(async (
     },
   };
   
-	return res.status(200).json({
-	statusCode: 200,
-    message: "success",
-	data:response
-	})
+	return res.status(200).json(response)
   }
   
    const newContact= await Contacts.create({
-	  email: req.body.email,
-      phoneNumber: req.body.phoneNumber.toString(),
+	  ...createContact,
 	  linkedId: contacts[0]?.id||null,
       linkPrecedence: 'secondary',
     });
@@ -81,9 +78,7 @@ export const identify =  asyncHandler(async (
     },
   };
 
-	return res.status(200).json({
-		data:response
-	})
+	return res.status(200).json(response)
   } catch (error:any) {
     console.error('Error creating contact:', error);
 	if(!error.message){
