@@ -1,7 +1,8 @@
 import {Sequelize} from 'sequelize';
 
-
-const sequelize = new Sequelize(process.env.DB_EXTERNAL_URL!, {
+let DB_URL=process.env.DB_EXTERNAL_URL!==""?process.env.DB_EXTERNAL_URL:process.env.DB_INTERNAL_URL
+console.log(DB_URL)
+const sequelize = new Sequelize(DB_URL, {
   dialect: 'postgres',
   dialectOptions: {
     ssl: {
