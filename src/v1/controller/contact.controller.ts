@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import {Op } from "sequelize";
 import { Contacts } from '../model/contact.model';
 import asyncHandler from '../utils/async.utils';
 
@@ -7,33 +8,30 @@ export const identify =  asyncHandler(async (
   res: Response
 ): Promise<void> => {
   try {
-  
-  const contactConditions: any = {};
+ if ([null,undefined,'',0].includes(req.body.email)&&[null,undefined,'',0].includes(req.body.phoneNumber)){
+	throw "Email 0r PhoneNumber needed"
+ }
+  const contactConditions: any = [];
 
-  if (req.body.email) {
-    contactConditions.email = req.body.email;
+  if (![null,undefined,'',0].includes(req.body.email)) {
+    contactConditions.push({email : req.body.email});
   }
 
-  if (req.body.phoneNumber) {
-    contactConditions.phoneNumber = req.body.phoneNumber.toString();
+  if (![null,undefined,'',0].includes(req.body.phoneNumber)) {
+   contactConditions.push({phoneNumber : req.body.phoneNumber.toString()});
   }
   
   let response = {}
   
   const contacts=await Contacts.findAll({
-   where: contactConditions,
-    include: [
-	{
-        model: Contacts,
-        as: 'primaryContact', 
-        required: false, 
-    },
-	{
-      model: Contacts,
-      as: 'linkedContact',
-	  required: false,
-    }],
+   where: {
+   [Op.or]:contactConditions
+   },
+   order:[['id','ASC']]
   })
+  
+  console.log(contactConditions)
+  console.log(contacts)
   
   if (contacts.length === 0) {
    const contactDetails= await Contacts.create({
@@ -51,34 +49,49 @@ export const identify =  asyncHandler(async (
     },
   };
   
-	return res.status(201).json({
-	statusCode: 201,
+	return res.status(200).json({
+	statusCode: 200,
     message: "success",
 	data:response
 	})
   }
+  
+   const newContact= await Contacts.create({
+	  email: req.body.email,
+      phoneNumber: req.body.phoneNumber.toString(),
+	  linkedId: contacts[0]?.id||null,
+      linkPrecedence: 'secondary',
+    });
 
-  const primaryContact = contacts.find(contact => contact.linkPrecedence === 'primary');
+  const primaryContact = [...new Set(contacts.map(contact => contact.email))];
   const secondaryContacts = contacts.filter(contact => contact.linkPrecedence === 'secondary');
 
-  const primaryContactId = primaryContact ? primaryContact.id : null;
-
+  const primaryContactId =contacts[0].id;
+  let emails=contacts.map(contact => contact.email)
+  let phoneNumbers=contacts.map(contact => contact.phoneNumber)
+  if(![null,undefined,'',0].includes(newContact.email)){
+	emails.push(newContact.email)
+  }
+  if(![null,undefined,'',0].includes(newContact.phoneNumber)){
+	phoneNumbers.push(newContact.phoneNumber)
+  }
   response = {
     contact: {
       primaryContatctId: primaryContactId,
-      emails: [primaryContact?.email || ''],
-      phoneNumbers: [primaryContact?.phoneNumber || ''],
-      secondaryContactIds: secondaryContacts.map(contact => contact.id),
+      emails:  [...new Set(emails.filter(e=>![null,undefined,'',0].includes(e)))],
+      phoneNumbers:  [...new Set(phoneNumbers.filter(e=>![null,undefined,'',0].includes(e)))],
+      secondaryContactIds: [...secondaryContacts.map(contact => contact.id),newContact.id],
     },
   };
 
-	return res.status(201).json({
-	statusCode: 201,
-    message: "success",
-	data:response
+	return res.status(200).json({
+		data:response
 	})
   } catch (error:any) {
     console.error('Error creating contact:', error);
-	res.status(400).json({ error: error.message });
+	if(!error.message){
+		return res.status(400).json({ error: error });
+	}
+	return res.status(400).json({ error: error.message });
   }
 });

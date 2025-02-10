@@ -9,7 +9,7 @@ const sequelize = new Sequelize(process.env.DB_EXTERNAL_URL!, {
       rejectUnauthorized: false,
     },
   },
-  logging: false, 
+  logging: true, 
 });
 
 let connection;
