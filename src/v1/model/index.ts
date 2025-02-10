@@ -1,7 +1,10 @@
 import {Sequelize} from 'sequelize';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 let DB_URL=process.env.DB_EXTERNAL_URL!==""?process.env.DB_EXTERNAL_URL:process.env.DB_INTERNAL_URL
-console.log(DB_URL)
+
 const sequelize = new Sequelize(DB_URL, {
   dialect: 'postgres',
   dialectOptions: {
