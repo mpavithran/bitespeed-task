@@ -30,9 +30,6 @@ export const identify =  asyncHandler(async (
    order:[['id','ASC']]
   })
   
-  console.log(contactConditions)
-  console.log(contacts)
-  
   if (contacts.length === 0) {
    const contactDetails= await Contacts.create({
 	  email: req.body.email,

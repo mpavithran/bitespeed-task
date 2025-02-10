@@ -16,6 +16,5 @@ app.get('/', (req, res) => {
 app.use('/api/v1/', v1Router);
 
 app.listen(port, () => {
-
-  return console.log(`Express is listening at http://localhost:${port}`);
+  return console.log(`Server is listening at port:${port}`);
 });
